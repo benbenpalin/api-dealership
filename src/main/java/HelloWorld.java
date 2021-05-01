@@ -48,6 +48,20 @@ public class HelloWorld {
             return gson.toJson(appointmentsResponse, AppointmentsResponse.class);
         });
 
+        get("api/vehicletypes", (req, res) -> {
+            VehicleType vehicleType1 = new VehicleType("Subaru", "Forester","2015", "111");
+            VehicleType vehicleType2 = new VehicleType ( "VW", "Bus", "1975", "222");
+
+            VehicleType[] vehicleTypes = {vehicleType1, vehicleType2};
+            VehicleTypeResponse vehicleTypeResponse = new VehicleTypeResponse(vehicleTypes);
+
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Content-Type");
+            res.status(200);
+
+            return gson.toJson(vehicleTypeResponse, VehicleTypeResponse.class);
+        });
+
         post("api/dropoff", (req, res) -> {
             DropoffRequest dropBody = gson.fromJson(req.body(), DropoffRequest.class);
 
@@ -57,6 +71,27 @@ public class HelloWorld {
 
             return "";
         });
+    }
+}
+class VehicleType {
+    public String make;
+    public String model;
+    public String year;
+    public String vehicleId;
+
+    public VehicleType(String make, String model, String year, String vehicleId) {
+        this.make = make;
+        this.model = model;
+        this.year = year;
+        this.vehicleId = vehicleId;
+    }
+}
+
+class VehicleTypeResponse {
+    public VehicleType[] vehicleTypes;
+
+    public VehicleTypeResponse(VehicleType[] vehicleTypes) {
+        this.vehicleTypes = vehicleTypes;
     }
 }
 
