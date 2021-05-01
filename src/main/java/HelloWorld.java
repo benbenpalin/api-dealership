@@ -34,6 +34,20 @@ public class HelloWorld {
             return gson.toJson(packagesResponse, PackagesResponse.class);
         });
 
+        get("api/appointments", (req, res) -> {
+            Appointment appointment1 = new Appointment("123", "Gray", "2015", "Subaru", "Forester", "111");
+            Appointment appointment2 = new Appointment("234", "Black", "1975", "VW", "Bus", "222");
+
+            Appointment[] appointments = {appointment1, appointment2};
+            AppointmentsResponse appointmentsResponse = new AppointmentsResponse(appointments);
+
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Content-Type");
+            res.status(200);
+
+            return gson.toJson(appointmentsResponse, AppointmentsResponse.class);
+        });
+
         post("api/dropoff", (req, res) -> {
             DropoffRequest dropBody = gson.fromJson(req.body(), DropoffRequest.class);
 
@@ -43,6 +57,32 @@ public class HelloWorld {
 
             return "";
         });
+    }
+}
+
+class Appointment {
+    public String appointmentId;
+    public String color;
+    public String year;
+    public String make;
+    public String model;
+    public String vehicleId;
+
+    public Appointment(String appointmentId, String color, String year, String make, String model, String vehicleId) {
+        this.appointmentId = appointmentId;
+        this.color = color;
+        this.year = year;
+        this.make = make;
+        this.model = model;
+        this.vehicleId = vehicleId;
+    }
+}
+
+class AppointmentsResponse {
+    public Appointment[] appointments;
+
+    public AppointmentsResponse(Appointment[] appointments) {
+        this.appointments = appointments;
     }
 }
 
