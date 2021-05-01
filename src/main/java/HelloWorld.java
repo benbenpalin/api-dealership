@@ -10,8 +10,6 @@ public class HelloWorld {
             String startDate = req.queryParams("startDate");
             String endDate = req.queryParams("endDate");
 
-            System.out.println(startDate);
-            System.out.println(endDate);
             ReportResponse repres = new ReportResponse("123", "bmw","x5" ,"2020" , 10, 12.0);
 
             res.header("Access-Control-Allow-Origin", "*");
@@ -20,7 +18,21 @@ public class HelloWorld {
 
            return gson.toJson(repres, ReportResponse.class);
         });
+
+        post("api/dropoff", (req, res) -> {
+            DropoffRequest dropBody = gson.fromJson(req.body(), DropoffRequest.class);
+
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Content-Type");
+            res.status(200);
+
+            return "";
+        });
     }
+}
+
+class DropoffRequest {
+    String appointmentId;
 }
 
 class ReportResponse {
