@@ -19,6 +19,21 @@ public class HelloWorld {
            return gson.toJson(repres, ReportResponse.class);
         });
 
+        get("api/packages", (req, res) -> {
+            Package noPackage = new Package("No Package", "000");
+            Package package1 = new Package("1 year", "123");
+            Package package2 = new Package("2 year", "234");
+
+            Package[] packages = {noPackage, package1, package2};
+            PackagesResponse packagesResponse = new PackagesResponse(packages);
+
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Content-Type");
+            res.status(200);
+
+            return gson.toJson(packagesResponse, PackagesResponse.class);
+        });
+
         post("api/dropoff", (req, res) -> {
             DropoffRequest dropBody = gson.fromJson(req.body(), DropoffRequest.class);
 
@@ -60,9 +75,24 @@ class ReportResponse {
     }
 }
 
-//  [{:vehicle-id ""
-//          :make ""
-//          :model ""
-//          :year ""
-//          :total-sold 100
-//          :profit 100.00}]
+class PackagesResponse {
+    public Package[] packages;
+    public PackagesResponse(
+            Package[] pkgs
+    ) {
+        packages = pkgs;
+    }
+}
+
+class Package {
+    public String name;
+    public String packageId;
+
+    public Package(
+            String pName,
+            String pId
+    ) {
+        name = pName;
+        packageId = pId;
+    }
+}
