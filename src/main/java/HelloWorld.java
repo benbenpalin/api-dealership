@@ -6,26 +6,25 @@ public class HelloWorld {
         Gson gson = new Gson();
 
         // get report
-        get("/report", (req, res) -> {
-           ReportRequest repreq = gson.fromJson(req.body(), ReportRequest.class);
+        get("api/report", (req, res) -> {
+            String startDate = req.queryParams("startDate");
+            String endDate = req.queryParams("endDate");
 
+            System.out.println(startDate);
+            System.out.println(endDate);
+            ReportResponse repres = new ReportResponse("123", "bmw","x5" ,"2020" , 10, 12.0);
 
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Content-Type");
+            res.status(200);
 
-           ReportResponse repres = new ReportResponse("123", "bmw","x5" ,"2020" , 10, 10.0);
-
-
-            return gson.toJson(repres, ReportResponse.class);
+           return gson.toJson(repres, ReportResponse.class);
         });
     }
 }
 
-class ReportRequest {
-    public String startDate;
-    public String endDate;
-}
-
 class ReportResponse {
-    public String vehicleID;
+    public String vehicleId;
     public String make;
     public String model;
     public String year;
@@ -33,14 +32,14 @@ class ReportResponse {
     public double profit;
 
     public ReportResponse (
-             String VehicleID,
+             String VehicleId,
              String Make,
              String Model,
              String Year,
              int TotalSold,
              double Profit
     ){
-        vehicleID = VehicleID;
+        vehicleId = VehicleId;
         make = Make;
         model = Model;
         year = Year;
