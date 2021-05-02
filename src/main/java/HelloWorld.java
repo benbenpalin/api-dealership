@@ -10,7 +10,7 @@ public class HelloWorld {
             String startDate = req.queryParams("startDate");
             String endDate = req.queryParams("endDate");
 
-            ReportResponse repres = new ReportResponse("123", "bmw","x5" ,"2020" , 10, 12.0);
+            ReportResponse repres = new ReportResponse(1, "bmw","x5" ,"2020" , 10, 12.0);
 
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Content-Type");
@@ -20,9 +20,9 @@ public class HelloWorld {
         });
 
         get("api/packages", (req, res) -> {
-            Package noPackage = new Package("No Package", "000");
-            Package package1 = new Package("1 year", "123");
-            Package package2 = new Package("2 year", "234");
+            Package noPackage = new Package("No Package", 0);
+            Package package1 = new Package("1 year", 1);
+            Package package2 = new Package("2 year", 2);
 
             Package[] packages = {noPackage, package1, package2};
             PackagesResponse packagesResponse = new PackagesResponse(packages);
@@ -35,8 +35,8 @@ public class HelloWorld {
         });
 
         get("api/appointments", (req, res) -> {
-            Appointment appointment1 = new Appointment("123", "Gray", "2015", "Subaru", "Forester", "111");
-            Appointment appointment2 = new Appointment("234", "Black", "1975", "VW", "Bus", "222");
+            Appointment appointment1 = new Appointment(1, "Gray", "2015", "Subaru", "Forester", 1);
+            Appointment appointment2 = new Appointment(2, "Black", "1975", "VW", "Bus", 2);
 
             Appointment[] appointments = {appointment1, appointment2};
             AppointmentsResponse appointmentsResponse = new AppointmentsResponse(appointments);
@@ -49,8 +49,8 @@ public class HelloWorld {
         });
 
         get("api/vehicletypes", (req, res) -> {
-            VehicleType vehicleType1 = new VehicleType("Subaru", "Forester","2015", "111");
-            VehicleType vehicleType2 = new VehicleType ( "VW", "Bus", "1975", "222");
+            VehicleType vehicleType1 = new VehicleType("Subaru", "Forester","2015", 1);
+            VehicleType vehicleType2 = new VehicleType ( "VW", "Bus", "1975", 2);
 
             VehicleType[] vehicleTypes = {vehicleType1, vehicleType2};
             VehicleTypeResponse vehicleTypeResponse = new VehicleTypeResponse(vehicleTypes);
@@ -65,12 +65,12 @@ public class HelloWorld {
         get("api/appointmenttasks", (req, res) -> {
             String appointmentId = req.queryParams("appointmentId");
 
-            TestTask test1 = new TestTask("123", "Brake Test", "321", "Brake Replacement");
-            TestTask test2 = new TestTask("234", "Alternator Test", "432", "Alternator Replacement");
+            TestTask test1 = new TestTask(1, "Brake Test", 3, "Brake Replacement");
+            TestTask test2 = new TestTask(2, "Alternator Test", 4, "Alternator Replacement");
             TestTask[] tests = {test1, test2};
 
-            ReplacementTask replacement1 = new ReplacementTask("345", "Filter Replacement", "543", "Filter", 10.00);
-            ReplacementTask replacement2 = new ReplacementTask("456", "Oil Change", "654", "Oil", 15.00);
+            ReplacementTask replacement1 = new ReplacementTask(2, "Filter Replacement", 4, "Filter", 10.00);
+            ReplacementTask replacement2 = new ReplacementTask(4, "Oil Change", 6, "Oil", 15.00);
             ReplacementTask[] replacements = {replacement1, replacement2};
 
             AppointmentTasksResponse appTasksRes = new AppointmentTasksResponse(tests, replacements);
@@ -88,12 +88,12 @@ public class HelloWorld {
         get("api/tasksinpackage", (req, res) -> {
             String packageId = req.queryParams("packageId");
 
-            PackageTask task1 = new PackageTask("123", "Brake Test", 1);
-            PackageTask task2 = new PackageTask("234", "Alternator Test", 2);
+            PackageTask task1 = new PackageTask(1, "Brake Test", 1);
+            PackageTask task2 = new PackageTask(2, "Alternator Test", 2);
             PackageTask[] tasksInPackage = {task1, task2};
 
-            PackageTask task3 = new PackageTask("345", "Filter Replacement", 2);
-            PackageTask task4 = new PackageTask("456", "Oil Change", 1);
+            PackageTask task3 = new PackageTask(3, "Filter Replacement", 2);
+            PackageTask task4 = new PackageTask(4, "Oil Change", 1);
             PackageTask[] tasksNotInPackage = {task3, task4};
 
 
@@ -120,11 +120,11 @@ public class HelloWorld {
 }
 
 class PackageTask{
-    public String taskId;
+    public int taskId;
     public String taskName;
     public int estdTime;
 
-    public PackageTask(String taskId, String taskName, int estdTime) {
+    public PackageTask(int taskId, String taskName, int estdTime) {
         this.taskId = taskId;
         this.taskName = taskName;
         this.estdTime = estdTime;
@@ -142,12 +142,12 @@ class TasksInPackageResponse {
 }
 
 class TestTask {
-    public String taskId;
+    public int taskId;
     public String taskName;
-    public String testFailureTaskId;
+    public int testFailureTaskId;
     public String testFailureTaskName;
 
-    public TestTask(String taskId, String taskName, String testFailureTaskId, String testFailureTaskName) {
+    public TestTask(int taskId, String taskName, int testFailureTaskId, String testFailureTaskName) {
         this.taskId = taskId;
         this.taskName = taskName;
         this.testFailureTaskId = testFailureTaskId;
@@ -156,13 +156,13 @@ class TestTask {
 }
 
 class ReplacementTask {
-    public String taskId;
+    public int taskId;
     public String taskName;
-    public String partId;
+    public int partId;
     public String partName;
     public double costOfPart;
 
-    public ReplacementTask(String taskId, String taskName, String partId, String partName, double costOfPart) {
+    public ReplacementTask(int taskId, String taskName, int partId, String partName, double costOfPart) {
         this.taskId = taskId;
         this.taskName = taskName;
         this.partId = partId;
@@ -186,9 +186,9 @@ class VehicleType {
     public String make;
     public String model;
     public String year;
-    public String vehicleId;
+    public int vehicleId;
 
-    public VehicleType(String make, String model, String year, String vehicleId) {
+    public VehicleType(String make, String model, String year, int vehicleId) {
         this.make = make;
         this.model = model;
         this.year = year;
@@ -205,14 +205,14 @@ class VehicleTypeResponse {
 }
 
 class Appointment {
-    public String appointmentId;
+    public int appointmentId;
     public String color;
     public String year;
     public String make;
     public String model;
-    public String vehicleId;
+    public int vehicleId;
 
-    public Appointment(String appointmentId, String color, String year, String make, String model, String vehicleId) {
+    public Appointment(int appointmentId, String color, String year, String make, String model, int vehicleId) {
         this.appointmentId = appointmentId;
         this.color = color;
         this.year = year;
@@ -235,7 +235,7 @@ class DropoffRequest {
 }
 
 class ReportResponse {
-    public String vehicleId;
+    public int vehicleId;
     public String make;
     public String model;
     public String year;
@@ -243,7 +243,7 @@ class ReportResponse {
     public double profit;
 
     public ReportResponse (
-             String VehicleId,
+            int VehicleId,
              String Make,
              String Model,
              String Year,
@@ -270,11 +270,11 @@ class PackagesResponse {
 
 class Package {
     public String name;
-    public String packageId;
+    public int packageId;
 
     public Package(
             String pName,
-            String pId
+            int pId
     ) {
         name = pName;
         packageId = pId;
