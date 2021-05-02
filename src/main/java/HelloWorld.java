@@ -83,6 +83,30 @@ public class HelloWorld {
             return gson.toJson(appTasksRes, AppointmentTasksResponse.class);
         });
 
+        //TODO make all ids ints
+
+        get("api/tasksinpackage", (req, res) -> {
+            String packageId = req.queryParams("packageId");
+
+            PackageTask task1 = new PackageTask("123", "Brake Test", 1);
+            PackageTask task2 = new PackageTask("234", "Alternator Test", 2);
+            PackageTask[] tasksInPackage = {task1, task2};
+
+            PackageTask task3 = new PackageTask("345", "Filter Replacement", 2);
+            PackageTask task4 = new PackageTask("456", "Oil Change", 1);
+            PackageTask[] tasksNotInPackage = {task3, task4};
+
+
+            TasksInPackageResponse response = new TasksInPackageResponse(tasksInPackage, tasksNotInPackage);
+
+
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Content-Type");
+            res.status(200);
+
+            return gson.toJson(response, TasksInPackageResponse.class);
+        });
+
         post("api/dropoff", (req, res) -> {
             DropoffRequest dropBody = gson.fromJson(req.body(), DropoffRequest.class);
 
@@ -92,6 +116,28 @@ public class HelloWorld {
 
             return "";
         });
+    }
+}
+
+class PackageTask{
+    public String taskId;
+    public String taskName;
+    public int estdTime;
+
+    public PackageTask(String taskId, String taskName, int estdTime) {
+        this.taskId = taskId;
+        this.taskName = taskName;
+        this.estdTime = estdTime;
+    }
+}
+
+class TasksInPackageResponse {
+    public PackageTask[] inPackage;
+    public PackageTask[] notInPackage;
+
+    public TasksInPackageResponse(PackageTask[] inPackage, PackageTask[] notInPackage) {
+        this.inPackage = inPackage;
+        this.notInPackage = notInPackage;
     }
 }
 
