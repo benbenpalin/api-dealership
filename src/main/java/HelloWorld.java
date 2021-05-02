@@ -62,6 +62,27 @@ public class HelloWorld {
             return gson.toJson(vehicleTypeResponse, VehicleTypeResponse.class);
         });
 
+        get("api/appointmenttasks", (req, res) -> {
+            String appointmentId = req.queryParams("appointmentId");
+
+            TestTask test1 = new TestTask("123", "Brake Test", "321", "Brake Replacement");
+            TestTask test2 = new TestTask("234", "Alternator Test", "432", "Alternator Replacement");
+            TestTask[] tests = {test1, test2};
+
+            ReplacementTask replacement1 = new ReplacementTask("345", "Filter Replacement", "543", "Filter", 10.00);
+            ReplacementTask replacement2 = new ReplacementTask("456", "Oil Change", "654", "Oil", 15.00);
+            ReplacementTask[] replacements = {replacement1, replacement2};
+
+            AppointmentTasksResponse appTasksRes = new AppointmentTasksResponse(tests, replacements);
+
+
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Content-Type");
+            res.status(200);
+
+            return gson.toJson(appTasksRes, AppointmentTasksResponse.class);
+        });
+
         post("api/dropoff", (req, res) -> {
             DropoffRequest dropBody = gson.fromJson(req.body(), DropoffRequest.class);
 
@@ -73,6 +94,48 @@ public class HelloWorld {
         });
     }
 }
+
+class TestTask {
+    public String taskId;
+    public String taskName;
+    public String testFailureTaskId;
+    public String testFailureTaskName;
+
+    public TestTask(String taskId, String taskName, String testFailureTaskId, String testFailureTaskName) {
+        this.taskId = taskId;
+        this.taskName = taskName;
+        this.testFailureTaskId = testFailureTaskId;
+        this.testFailureTaskName = testFailureTaskName;
+    }
+}
+
+class ReplacementTask {
+    public String taskId;
+    public String taskName;
+    public String partId;
+    public String partName;
+    public double costOfPart;
+
+    public ReplacementTask(String taskId, String taskName, String partId, String partName, double costOfPart) {
+        this.taskId = taskId;
+        this.taskName = taskName;
+        this.partId = partId;
+        this.partName = partName;
+        this.costOfPart = costOfPart;
+    }
+}
+
+class AppointmentTasksResponse{
+    public TestTask[] tests;
+    public ReplacementTask[] partReplacements;
+
+    public AppointmentTasksResponse(TestTask[] tests, ReplacementTask[] partReplacements) {
+        this.tests = tests;
+        this.partReplacements = partReplacements;
+    }
+}
+
+
 class VehicleType {
     public String make;
     public String model;
