@@ -83,8 +83,6 @@ public class HelloWorld {
             return gson.toJson(appTasksRes, AppointmentTasksResponse.class);
         });
 
-        //TODO make all ids ints
-
         get("api/tasksinpackage", (req, res) -> {
             String packageId = req.queryParams("packageId");
 
@@ -107,6 +105,27 @@ public class HelloWorld {
             return gson.toJson(response, TasksInPackageResponse.class);
         });
 
+        get("api/timeslot", (req, res) -> {
+            String totalTime = req.queryParams("totalTime");
+            String date = req.queryParams("date");
+
+            Timeslot slot1 = new Timeslot(1, "1:00PM", "2:00 PM");
+            Timeslot slot2 = new Timeslot(2, "2:00PM", "3:00 PM");
+            Timeslot[] tasksInPackage = {slot1, slot2};
+
+
+            Timeslot[] timeslots = {slot1, slot2};
+
+            TimeslotResponse response = new TimeslotResponse(timeslots);
+
+
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Content-Type");
+            res.status(200);
+
+            return gson.toJson(response, TimeslotResponse.class);
+        });
+
         post("api/dropoff", (req, res) -> {
             DropoffRequest dropBody = gson.fromJson(req.body(), DropoffRequest.class);
 
@@ -116,6 +135,295 @@ public class HelloWorld {
 
             return "";
         });
+
+        post("api/purchase", (req, res) -> {
+            CustomerInfo purchaseBody = gson.fromJson(req.body(), CustomerInfo.class);
+            String[] customers = {"Barack", "Michel"};
+
+            PurchaseResponse response = new PurchaseResponse(customers, 1, "Toyota", "Camry", "2015", "Blue", "1234567", "DC");
+
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Content-Type");
+            res.status(200);
+
+            return gson.toJson(response, PurchaseResponse.class);
+        });
+
+        post("api/makeappointment", (req, res) -> {
+            AppointmentRequest appointmentBody = gson.fromJson(req.body(), AppointmentRequest.class);
+
+            AppointmentResponse response = new AppointmentResponse(1);
+
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Content-Type");
+            res.status(200);
+
+            return gson.toJson(response, AppointmentResponse.class);
+        });
+
+        post("api/addpart", (req, res) -> {
+            AddPartRequest addpartBody = gson.fromJson(req.body(), AddPartRequest.class);
+
+
+
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Content-Type");
+            res.status(200);
+
+            return "";
+        });
+
+        post("api/addtask", (req, res) -> {
+            AddOrCompleteTask addtaskBody = gson.fromJson(req.body(), AddOrCompleteTask.class);
+
+
+
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Content-Type");
+            res.status(200);
+
+            return "";
+        });
+
+        post("api/completetask", (req, res) -> {
+            AddOrCompleteTask completetaskBody = gson.fromJson(req.body(), AddOrCompleteTask.class);
+
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Content-Type");
+            res.status(200);
+
+            return "";
+        });
+
+        post("api/completeappointment", (req, res) -> {
+            CompleteAppointmentRequest completeAppointmentBody = gson.fromJson(req.body(), CompleteAppointmentRequest.class);
+
+            String[] customers = {"Barack", "Michel"};
+
+            FinishedTest test1 = new FinishedTest("Brake Test", 10, 100, "passed");
+            FinishedTest test2 = new FinishedTest("Engine Test", 10, 100, "failed");
+
+            FinishedTest[] tests = {test1, test2};
+
+            FinishedReplacement rep1 = new FinishedReplacement("Oil Change", 15, 1, "oil", 75);
+            FinishedReplacement rep2 = new FinishedReplacement("Enginer Replace", 75, 750, "enginer", 1000);
+
+            FinishedReplacement[] reps= {rep1, rep2};
+            CompleteAppointmentResponse response = new CompleteAppointmentResponse(customers, tests, reps, "10:00 AM", "2:00 PM");
+
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Content-Type");
+            res.status(200);
+
+            return gson.toJson(response, CompleteAppointmentResponse.class);
+        });
+
+    }
+}
+
+class CompleteAppointmentRequest{
+    public int appointmentId;
+    public String pickUpTime;
+
+    public CompleteAppointmentRequest(int appointmentId, String pickUpTime) {
+        this.appointmentId = appointmentId;
+        this.pickUpTime = pickUpTime;
+    }
+}
+
+class CompleteAppointmentResponse{
+    public String[] customerNames;
+    public FinishedTest[] tests;
+    public FinishedReplacement[] replacements;
+    public String dropOff;
+    public String pickUp;
+
+    public CompleteAppointmentResponse(String[] customerNames, FinishedTest[] tests, FinishedReplacement[] replacements, String dropOff, String pickUp) {
+        this.customerNames = customerNames;
+        this.tests = tests;
+        this.replacements = replacements;
+        this.dropOff = dropOff;
+        this.pickUp = pickUp;
+    }
+}
+
+class FinishedTest {
+    public String taskName;
+    public int timeToComplete;
+    public int laborCost;
+    public String testStatus;
+
+    public FinishedTest(String taskName, int timeToComplete, int laborCost, String testStatus) {
+        this.taskName = taskName;
+        this.timeToComplete = timeToComplete;
+        this.laborCost = laborCost;
+        this.testStatus = testStatus;
+    }
+}
+
+class FinishedReplacement {
+    public String taskName;
+    public int timeToComplete;
+    public int laborCost;
+    public String partName;
+    public double costOfPart;
+
+    public FinishedReplacement(String taskName, int timeToComplete, int laborCost, String partName, double costOfPart) {
+        this.taskName = taskName;
+        this.timeToComplete = timeToComplete;
+        this.laborCost = laborCost;
+        this.partName = partName;
+        this.costOfPart = costOfPart;
+    }
+}
+
+class AddOrCompleteTask {
+    public int taskId;
+    public int appointmentId;
+
+    public AddOrCompleteTask(int taskId, int appointmentId) {
+        this.taskId = taskId;
+        this.appointmentId = appointmentId;
+    }
+}
+
+class AddPartRequest{
+    public int appointmentId;
+    public int partId;
+
+    public AddPartRequest(int appointmentId, int partId) {
+        this.appointmentId = appointmentId;
+        this.partId = partId;
+    }
+}
+
+class NewCar{
+    public boolean isNew;
+    public int carId;
+    public int vehicleId;
+    public String licensePlateNumber;
+    public String licensePlateState;
+    public String color;
+    public String odometer;
+
+    public NewCar(boolean isNew, int carId, int vehicleId, String licensePlateNumber, String licensePlateState, String color, String odometer) {
+        this.isNew = isNew;
+        this.carId = carId;
+        this.vehicleId = vehicleId;
+        this.licensePlateNumber = licensePlateNumber;
+        this.licensePlateState = licensePlateState;
+        this.color = color;
+        this.odometer = odometer;
+    }
+}
+
+class AppointmentRequest{
+    public CustomerInfo customer;
+    public NewCar car;
+    public int pakcageId;
+    public String[] tasks;
+    public int timeslotId;
+
+    public AppointmentRequest(CustomerInfo customer, NewCar car, int pakcageId, String[] tasks, int timeslotId) {
+        this.customer = customer;
+        this.car = car;
+        this.pakcageId = pakcageId;
+        this.tasks = tasks;
+        this.timeslotId = timeslotId;
+    }
+}
+
+class AppointmentResponse{
+    public int appointmentId;
+
+    public AppointmentResponse(int appointmentId) {
+        this.appointmentId = appointmentId;
+    }
+}
+
+class TimeslotRequest{
+    public String totalTime;
+    public String date;
+
+    public TimeslotRequest(String totalTime, String date) {
+        this.totalTime = totalTime;
+        this.date = date;
+    }
+}
+
+class Timeslot {
+    public int timeslotId;
+    public String startTime;
+    public String endTime;
+
+    public Timeslot(int timeslotId, String startTime, String endTime) {
+        this.timeslotId = timeslotId;
+        this.startTime = startTime;
+        this.endTime = endTime;
+    }
+}
+
+class TimeslotResponse{
+    public Timeslot[] timeslots;
+
+    public TimeslotResponse(Timeslot[] timeslots) {
+        this.timeslots = timeslots;
+    }
+}
+
+class NewCustomer{
+    public String firstName;
+    public String middleInitial;
+    public String lastName;
+    public String phoneNumber;
+    public String streetAddress;
+    public String city;
+    public String state;
+    public String zipCode;
+
+    public NewCustomer(String firstName, String middleInitial, String lastName, String phoneNumber, String streetAddress, String city, String state, String zipCode) {
+        this.firstName = firstName;
+        this.middleInitial = middleInitial;
+        this.lastName = lastName;
+        this.phoneNumber = phoneNumber;
+        this.streetAddress = streetAddress;
+        this.city = city;
+        this.state = state;
+        this.zipCode = zipCode;
+    }
+}
+// TODO add carID and salePrice to purchase
+class CustomerInfo {
+    public boolean isNew;
+    public String[] customerId[];
+    public NewCustomer[] newCustomers;
+
+    public CustomerInfo(boolean isNew, String[][] customerId, NewCustomer[] newCustomers) {
+        this.isNew = isNew;
+        this.customerId = customerId;
+        this.newCustomers = newCustomers;
+    }
+}
+
+class PurchaseResponse{
+    public String[] customerNames;
+    public int purchaseId;
+    public String make;
+    public String model;
+    public String year;
+    public String color;
+    public String licensePlateNumber;
+    public String licensePlantState;
+
+    public PurchaseResponse(String[] customerNames, int purchaseId, String make, String model, String year, String color, String licensePlateNumber, String licensePlantState) {
+        this.customerNames = customerNames;
+        this.purchaseId = purchaseId;
+        this.make = make;
+        this.model = model;
+        this.year = year;
+        this.color = color;
+        this.licensePlateNumber = licensePlateNumber;
+        this.licensePlantState = licensePlantState;
     }
 }
 
@@ -140,6 +448,7 @@ class TasksInPackageResponse {
         this.notInPackage = notInPackage;
     }
 }
+
 
 class TestTask {
     public int taskId;
