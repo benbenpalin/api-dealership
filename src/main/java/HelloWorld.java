@@ -137,7 +137,7 @@ public class HelloWorld {
         });
 
         post("api/purchase", (req, res) -> {
-            CustomerInfo purchaseBody = gson.fromJson(req.body(), CustomerInfo.class);
+            PurchaseRequest purchaseBody = gson.fromJson(req.body(), PurchaseRequest.class);
             String[] customers = {"Barack", "Michel"};
 
             PurchaseResponse response = new PurchaseResponse(customers, 1, "Toyota", "Camry", "2015", "Blue", "1234567", "DC");
@@ -393,12 +393,18 @@ class NewCustomer{
     }
 }
 // TODO add carID and salePrice to purchase
+class PurchaseRequest{
+    public CustomerInfo[] customer;
+    public int carId;
+    public double salePrice;
+}
+
 class CustomerInfo {
     public boolean isNew;
-    public String[] customerId[];
+    public int[] customerId[];
     public NewCustomer[] newCustomers;
 
-    public CustomerInfo(boolean isNew, String[][] customerId, NewCustomer[] newCustomers) {
+    public CustomerInfo(boolean isNew, int[][] customerId, NewCustomer[] newCustomers) {
         this.isNew = isNew;
         this.customerId = customerId;
         this.newCustomers = newCustomers;
