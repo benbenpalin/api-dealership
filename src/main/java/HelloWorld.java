@@ -20,11 +20,10 @@ public class HelloWorld {
         });
 
         get("api/packages", (req, res) -> {
-            Package noPackage = new Package("No Package", 0);
             Package package1 = new Package("1 year", 1);
             Package package2 = new Package("2 year", 2);
 
-            Package[] packages = {noPackage, package1, package2};
+            Package[] packages = {package1, package2};
             PackagesResponse packagesResponse = new PackagesResponse(packages);
 
             res.header("Access-Control-Allow-Origin", "*");
@@ -150,7 +149,7 @@ public class HelloWorld {
             return gson.toJson(response, PurchaseResponse.class);
         });
 
-        post("api/makeappointment", (req, res) -> {
+        post("api/bookappointment", (req, res) -> {
             AppointmentRequest appointmentBody = gson.fromJson(req.body(), AppointmentRequest.class);
 
             AppointmentResponse response = new AppointmentResponse(1);
