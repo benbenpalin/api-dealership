@@ -138,9 +138,10 @@ public class HelloWorld {
 
         post("api/purchase", (req, res) -> {
             PurchaseRequest purchaseBody = gson.fromJson(req.body(), PurchaseRequest.class);
+
             String[] customers = {"Barack", "Michel"};
 
-            PurchaseResponse response = new PurchaseResponse(customers, 1, "Toyota", "Camry", "2015", "Blue", "1234567", "DC");
+            PurchaseResponse response = new PurchaseResponse(customers, 1, "5/2/2020","Toyota", "Camry", "2015", "Blue", "1234567", "DC");
 
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Content-Type");
@@ -394,42 +395,50 @@ class NewCustomer{
 }
 // TODO add carID and salePrice to purchase
 class PurchaseRequest{
-    public CustomerInfo[] customer;
-    public int carId;
+    public CustomerInfo customer;
+    public String carId;
     public double salePrice;
+
+    public PurchaseRequest(CustomerInfo customer, String carId, double salePrice) {
+        this.customer = customer;
+        this.carId = carId;
+        this.salePrice = salePrice;
+    }
 }
 
 class CustomerInfo {
     public boolean isNew;
-    public int[] customerId[];
+    public String[] customerId[];
     public NewCustomer[] newCustomers;
 
-    public CustomerInfo(boolean isNew, int[][] customerId, NewCustomer[] newCustomers) {
+    public CustomerInfo(boolean isNew, String[][] customerId, NewCustomer[] newCustomers) {
         this.isNew = isNew;
         this.customerId = customerId;
         this.newCustomers = newCustomers;
     }
 }
 
-class PurchaseResponse{
+class PurchaseResponse {
     public String[] customerNames;
     public int purchaseId;
+    public String dateOfSale;
     public String make;
     public String model;
     public String year;
     public String color;
     public String licensePlateNumber;
-    public String licensePlantState;
+    public String licensePlateState;
 
-    public PurchaseResponse(String[] customerNames, int purchaseId, String make, String model, String year, String color, String licensePlateNumber, String licensePlantState) {
+    public PurchaseResponse(String[] customerNames, int purchaseId, String dateOfSale, String make, String model, String year, String color, String licensePlateNumber, String licensePlateState) {
         this.customerNames = customerNames;
         this.purchaseId = purchaseId;
+        this.dateOfSale = dateOfSale;
         this.make = make;
         this.model = model;
         this.year = year;
         this.color = color;
         this.licensePlateNumber = licensePlateNumber;
-        this.licensePlantState = licensePlantState;
+        this.licensePlateState = licensePlateState;
     }
 }
 
