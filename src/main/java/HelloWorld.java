@@ -133,7 +133,7 @@ public class HelloWorld {
             res.header("Access-Control-Allow-Headers", "Content-Type");
             res.status(200);
 
-            return "";
+            return "200";
         });
 
         post("api/purchase", (req, res) -> {
@@ -165,13 +165,11 @@ public class HelloWorld {
         post("api/addpart", (req, res) -> {
             AddPartRequest addpartBody = gson.fromJson(req.body(), AddPartRequest.class);
 
-
-
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Content-Type");
             res.status(200);
 
-            return "";
+            return "200";
         });
 
         post("api/addtask", (req, res) -> {
@@ -183,7 +181,7 @@ public class HelloWorld {
             res.header("Access-Control-Allow-Headers", "Content-Type");
             res.status(200);
 
-            return "";
+            return "200";
         });
 
         post("api/completetask", (req, res) -> {
@@ -193,7 +191,7 @@ public class HelloWorld {
             res.header("Access-Control-Allow-Headers", "Content-Type");
             res.status(200);
 
-            return "";
+            return "200";
         });
 
         post("api/completeappointment", (req, res) -> {
@@ -555,7 +553,11 @@ class AppointmentsResponse {
 }
 
 class DropoffRequest {
-    String appointmentId;
+    int appointmentId;
+
+    public DropoffRequest(int appointmentId) {
+        this.appointmentId = appointmentId;
+    }
 }
 
 class ReportResponse {
