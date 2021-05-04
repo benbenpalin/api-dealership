@@ -305,9 +305,9 @@ class NewCar{
     public String licensePlateNumber;
     public String licensePlateState;
     public String color;
-    public String odometer;
+    public int odometer;
 
-    public NewCar(boolean isNew, int carId, int vehicleId, String licensePlateNumber, String licensePlateState, String color, String odometer) {
+    public NewCar(boolean isNew, int carId, int vehicleId, String licensePlateNumber, String licensePlateState, String color, int odometer) {
         this.isNew = isNew;
         this.carId = carId;
         this.vehicleId = vehicleId;
@@ -321,14 +321,14 @@ class NewCar{
 class AppointmentRequest{
     public CustomerInfo customer;
     public NewCar car;
-    public int pakcageId;
-    public String[] tasks;
+    public int packageId;
+    public int[] tasks;
     public int timeslotId;
 
-    public AppointmentRequest(CustomerInfo customer, NewCar car, int pakcageId, String[] tasks, int timeslotId) {
+    public AppointmentRequest(CustomerInfo customer, NewCar car, int packageId, int[] tasks, int timeslotId) {
         this.customer = customer;
         this.car = car;
-        this.pakcageId = pakcageId;
+        this.packageId = packageId;
         this.tasks = tasks;
         this.timeslotId = timeslotId;
     }
@@ -396,10 +396,10 @@ class NewCustomer{
 // TODO add carID and salePrice to purchase
 class PurchaseRequest{
     public CustomerInfo customer;
-    public String carId;
+    public int carId;
     public double salePrice;
 
-    public PurchaseRequest(CustomerInfo customer, String carId, double salePrice) {
+    public PurchaseRequest(CustomerInfo customer, int carId, double salePrice) {
         this.customer = customer;
         this.carId = carId;
         this.salePrice = salePrice;
@@ -408,10 +408,10 @@ class PurchaseRequest{
 
 class CustomerInfo {
     public boolean isNew;
-    public String[] customerId[];
+    public int[] customerId;
     public NewCustomer[] newCustomers;
 
-    public CustomerInfo(boolean isNew, String[][] customerId, NewCustomer[] newCustomers) {
+    public CustomerInfo(boolean isNew, int[] customerId, NewCustomer[] newCustomers) {
         this.isNew = isNew;
         this.customerId = customerId;
         this.newCustomers = newCustomers;
