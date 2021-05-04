@@ -104,9 +104,10 @@ public class HelloWorld {
             return gson.toJson(response, TasksInPackageResponse.class);
         });
 
-        get("api/timeslot", (req, res) -> {
+        get("api/timeslots", (req, res) -> {
             String totalTime = req.queryParams("totalTime");
             String date = req.queryParams("date");
+
 
             Timeslot slot1 = new Timeslot(1, "1:00PM", "2:00 PM");
             Timeslot slot2 = new Timeslot(2, "2:00PM", "3:00 PM");
