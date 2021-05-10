@@ -68,7 +68,7 @@ public class HelloWorld {
             TestTask test2 = new TestTask(2, "Alternator Test", 4, "Alternator Replacement");
             TestTask[] tests = {test1, test2};
 
-            ReplacementTask replacement1 = new ReplacementTask(2, "Filter Replacement", 4, "Filter", 10.00);
+            ReplacementTask replacement1 = new ReplacementTask(3, "Filter Replacement", 4, "Filter", 10.00);
             ReplacementTask replacement2 = new ReplacementTask(4, "Oil Change", 6, "Oil", 15.00);
             ReplacementTask[] replacements = {replacement1, replacement2};
 
@@ -175,8 +175,6 @@ public class HelloWorld {
         post("api/addtask", (req, res) -> {
             AddOrCompleteTask addtaskBody = gson.fromJson(req.body(), AddOrCompleteTask.class);
 
-
-
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Content-Type");
             res.status(200);
@@ -208,7 +206,7 @@ public class HelloWorld {
             FinishedReplacement rep2 = new FinishedReplacement("Enginer Replace", 75, 750, "enginer", 1000);
 
             FinishedReplacement[] reps= {rep1, rep2};
-            CompleteAppointmentResponse response = new CompleteAppointmentResponse(customers, tests, reps, "10:00 AM", "2:00 PM");
+            CompleteAppointmentResponse response = new CompleteAppointmentResponse(customers, tests, reps, "10:00 AM", "2:00 PM", "05/09/2021");
 
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Content-Type");
@@ -222,11 +220,9 @@ public class HelloWorld {
 
 class CompleteAppointmentRequest{
     public int appointmentId;
-    public String pickUpTime;
 
     public CompleteAppointmentRequest(int appointmentId, String pickUpTime) {
         this.appointmentId = appointmentId;
-        this.pickUpTime = pickUpTime;
     }
 }
 
@@ -236,13 +232,15 @@ class CompleteAppointmentResponse{
     public FinishedReplacement[] replacements;
     public String dropOff;
     public String pickUp;
+    public String date;
 
-    public CompleteAppointmentResponse(String[] customerNames, FinishedTest[] tests, FinishedReplacement[] replacements, String dropOff, String pickUp) {
+    public CompleteAppointmentResponse(String[] customerNames, FinishedTest[] tests, FinishedReplacement[] replacements, String dropOff, String pickUp, String date) {
         this.customerNames = customerNames;
         this.tests = tests;
         this.replacements = replacements;
         this.dropOff = dropOff;
         this.pickUp = pickUp;
+        this.date = date;
     }
 }
 
@@ -279,10 +277,14 @@ class FinishedReplacement {
 class AddOrCompleteTask {
     public int taskId;
     public int appointmentId;
+    public boolean isTest;
+    public String testPassed;
 
-    public AddOrCompleteTask(int taskId, int appointmentId) {
+    public AddOrCompleteTask(int taskId, int appointmentId, boolean isTest, String testPassed) {
         this.taskId = taskId;
         this.appointmentId = appointmentId;
+        this.isTest = isTest;
+        this.testPassed = testPassed;
     }
 }
 
