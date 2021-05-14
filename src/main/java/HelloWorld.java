@@ -1,12 +1,30 @@
 import static spark.Spark.*;
 import com.google.gson.*;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.io.*;
 
 public class HelloWorld {
     public static void main(String[] args) {
+
         Gson gson = new Gson();
 
         // get report
         get("api/report", (req, res) -> {
+            try {
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                Connection con=DriverManager.getConnection(
+                        "jdbc:mysql://localhost:3306/mydb","user","user");
+                Statement stmt=con.createStatement();
+                ResultSet rs=stmt.executeQuery("select * from appointment");
+                while(rs.next())
+                    System.out.println(rs.getInt(1));
+
+                con.close();
+            } catch (Exception e){System.out.println(e);}
+
+
             String startDate = req.queryParams("startDate");
             String endDate = req.queryParams("endDate");
 
@@ -48,11 +66,29 @@ public class HelloWorld {
         });
 
         get("api/vehicletypes", (req, res) -> {
-            VehicleType vehicleType1 = new VehicleType("Subaru", "Forester","2015", 1);
-            VehicleType vehicleType2 = new VehicleType ( "VW", "Bus", "1975", 2);
 
-            VehicleType[] vehicleTypes = {vehicleType1, vehicleType2};
-            VehicleTypeResponse vehicleTypeResponse = new VehicleTypeResponse(vehicleTypes);
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                Connection con=DriverManager.getConnection(
+                        "jdbc:mysql://localhost:3306/mydb","user","user");
+                Statement stmt=con.createStatement();
+                ResultSet rs=stmt.executeQuery("select\n" +
+                        "\n" +
+                        "Make,\n" +
+                        "Model,\n" +
+                        "Year,\n" +
+                        "vehicle_Id as `Vehicle ID`\n" +
+                        "\n" +
+                        "from vehicle_type;");
+
+                ArrayList<VehicleType> vehicles = new ArrayList<VehicleType>();
+
+                while(rs.next()) {
+                    VehicleType vehicle = new VehicleType(rs.getString(1), rs.getString(2), rs.getString(3).substring(0,4), rs.getInt(4));
+                    vehicles.add(vehicle);
+                }
+                con.close();
+
+            VehicleTypeResponse vehicleTypeResponse = new VehicleTypeResponse(vehicles);
 
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Content-Type");
@@ -521,9 +557,9 @@ class VehicleType {
 }
 
 class VehicleTypeResponse {
-    public VehicleType[] vehicleTypes;
+    public ArrayList<VehicleType> vehicleTypes;
 
-    public VehicleTypeResponse(VehicleType[] vehicleTypes) {
+    public VehicleTypeResponse(ArrayList<VehicleType> vehicleTypes) {
         this.vehicleTypes = vehicleTypes;
     }
 }
