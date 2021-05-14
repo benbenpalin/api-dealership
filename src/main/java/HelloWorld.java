@@ -38,10 +38,25 @@ public class HelloWorld {
         });
 
         get("api/packages", (req, res) -> {
-            Package package1 = new Package("1 year", 1);
-            Package package2 = new Package("2 year", 2);
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/mydb","user","user");
+            Statement stmt=con.createStatement();
+            ResultSet rs=stmt.executeQuery("select \n" +
+                    "\n" +
+                    "Name ,\n" +
+                    "Package_ID as `Package ID`\n" +
+                    "\n" +
+                    "from package;");
 
-            Package[] packages = {package1, package2};
+            ArrayList<Package> packages = new ArrayList<Package>();
+
+            while(rs.next()) {
+                Package pack = new Package(rs.getString(1), rs.getInt(2));
+                packages.add(pack);
+            }
+            con.close();
+
             PackagesResponse packagesResponse = new PackagesResponse(packages);
 
             res.header("Access-Control-Allow-Origin", "*");
@@ -647,9 +662,9 @@ class ReportResponse {
 }
 
 class PackagesResponse {
-    public Package[] packages;
+    public ArrayList<Package> packages;
     public PackagesResponse(
-            Package[] pkgs
+            ArrayList<Package> pkgs
     ) {
         packages = pkgs;
     }
