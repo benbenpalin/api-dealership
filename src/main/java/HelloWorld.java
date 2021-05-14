@@ -52,10 +52,32 @@ public class HelloWorld {
         });
 
         get("api/appointments", (req, res) -> {
-            Appointment appointment1 = new Appointment(1, "Gray", "2015", "Subaru", "Forester", 1);
-            Appointment appointment2 = new Appointment(2, "Black", "1975", "VW", "Bus", 2);
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/mydb","user","user");
+            Statement stmt=con.createStatement();
+            ResultSet rs=stmt.executeQuery("select \n" +
+                    "\n" +
+                    "Appointment_ID as 'Appointment ID',\n" +
+                    "Color,\n" +
+                    "Year,\n" +
+                    "Make,\n" +
+                    "Model,\n" +
+                    "car.Vehicle_ID as 'Vehicle ID'\n" +
+                    "\n" +
+                    "from appointment\n" +
+                    "inner join Car ON car.Car_ID = appointment.Car_ID\n" +
+                    "inner join vehicle_type ON vehicle_type.Vehicle_ID = car.Vehicle_ID\n" +
+                    ";");
 
-            Appointment[] appointments = {appointment1, appointment2};
+            ArrayList<Appointment> appointments = new ArrayList<Appointment>();
+
+            while(rs.next()) {
+                Appointment app = new Appointment(rs.getInt(1), rs.getString(2), rs.getString(3).substring(0,4), rs.getString(4), rs.getString(5), rs.getInt(6));
+                appointments.add(app);
+            }
+            con.close();
+
             AppointmentsResponse appointmentsResponse = new AppointmentsResponse(appointments);
 
             res.header("Access-Control-Allow-Origin", "*");
@@ -67,26 +89,26 @@ public class HelloWorld {
 
         get("api/vehicletypes", (req, res) -> {
 
-                Class.forName("com.mysql.cj.jdbc.Driver");
-                Connection con=DriverManager.getConnection(
-                        "jdbc:mysql://localhost:3306/mydb","user","user");
-                Statement stmt=con.createStatement();
-                ResultSet rs=stmt.executeQuery("select\n" +
-                        "\n" +
-                        "Make,\n" +
-                        "Model,\n" +
-                        "Year,\n" +
-                        "vehicle_Id as `Vehicle ID`\n" +
-                        "\n" +
-                        "from vehicle_type;");
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/mydb","user","user");
+            Statement stmt=con.createStatement();
+            ResultSet rs=stmt.executeQuery("select\n" +
+                    "\n" +
+                    "Make,\n" +
+                    "Model,\n" +
+                    "Year,\n" +
+                    "vehicle_Id as `Vehicle ID`\n" +
+                    "\n" +
+                    "from vehicle_type;");
 
-                ArrayList<VehicleType> vehicles = new ArrayList<VehicleType>();
+            ArrayList<VehicleType> vehicles = new ArrayList<VehicleType>();
 
-                while(rs.next()) {
-                    VehicleType vehicle = new VehicleType(rs.getString(1), rs.getString(2), rs.getString(3).substring(0,4), rs.getInt(4));
-                    vehicles.add(vehicle);
-                }
-                con.close();
+            while(rs.next()) {
+                VehicleType vehicle = new VehicleType(rs.getString(1), rs.getString(2), rs.getString(3).substring(0,4), rs.getInt(4));
+                vehicles.add(vehicle);
+            }
+            con.close();
 
             VehicleTypeResponse vehicleTypeResponse = new VehicleTypeResponse(vehicles);
 
@@ -98,6 +120,7 @@ public class HelloWorld {
         });
 
         get("api/appointmenttasks", (req, res) -> {
+
             String appointmentId = req.queryParams("appointmentId");
 
             TestTask test1 = new TestTask(1, "Brake Test", 3, "Brake Replacement");
@@ -583,9 +606,9 @@ class Appointment {
 }
 
 class AppointmentsResponse {
-    public Appointment[] appointments;
+    public ArrayList<Appointment> appointments;
 
-    public AppointmentsResponse(Appointment[] appointments) {
+    public AppointmentsResponse(ArrayList<Appointment> appointments) {
         this.appointments = appointments;
     }
 }
