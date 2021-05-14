@@ -325,6 +325,16 @@ public class HelloWorld {
         post("api/addpart", (req, res) -> {
             AddPartRequest addpartBody = gson.fromJson(req.body(), AddPartRequest.class);
 
+            String values = addpartBody.appointmentId + "," + addpartBody.partId;
+
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/mydb","user","user");
+            Statement stmt=con.createStatement();
+            stmt.executeUpdate("Insert Into was_replaced\n" +
+                    "Values (" + values + ")");
+            con.close();
+
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Content-Type");
             res.status(200);
