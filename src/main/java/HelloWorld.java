@@ -138,15 +138,57 @@ public class HelloWorld {
 
             String appointmentId = req.queryParams("appointmentId");
 
-            TestTask test1 = new TestTask(1, "Brake Test", 3, "Brake Replacement");
-            TestTask test2 = new TestTask(2, "Alternator Test", 4, "Alternator Replacement");
-            TestTask[] tests = {test1, test2};
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/mydb","user","user");
+            Statement stmt=con.createStatement();
+            ResultSet rsTest=stmt.executeQuery("select\n" +
+                    "scheduled.Task_ID as 'Task ID',\n" +
+                    "concat(t1.Name , ' ' , t1.Task_type) as 'Task Name' ,\n" +
+                    "failure_requires.Part_Replacement_ID,\n" +
+                    "concat(t2.Name , ' ' , t2.Task_type) as 'Replacement_Name'\n" +
+                    "from scheduled, task t1, task t2, failure_requires\n" +
+                    "WHERE t1.Task_ID = scheduled.Task_ID\n" +
+                    "AND failure_requires.Test_Task_ID = scheduled.Task_ID\n" +
+                    "AND failure_requires.Part_Replacement_ID = t2.Task_ID\n" +
+                    "AND t1.Task_Type = 'Test' \n" +
+                    "AND Appointment_ID = " + appointmentId);
 
-            ReplacementTask replacement1 = new ReplacementTask(3, "Filter Replacement", 4, "Filter", 10.00);
-            ReplacementTask replacement2 = new ReplacementTask(4, "Oil Change", 6, "Oil", 15.00);
-            ReplacementTask[] replacements = {replacement1, replacement2};
+            ArrayList<TestTask> tests = new ArrayList<TestTask>();
 
-            AppointmentTasksResponse appTasksRes = new AppointmentTasksResponse(tests, replacements);
+            while(rsTest.next()) {
+                TestTask test = new TestTask(rsTest.getInt(1), rsTest.getString(2), rsTest.getInt(3), rsTest.getString(4));
+                tests.add(test);
+            }
+
+            Statement stmt2=con.createStatement();
+            ResultSet rsRep=stmt2.executeQuery("Select \n" +
+                    "s.task_ID,\n" +
+                    "t.Name,\n" +
+                    "p.part_ID,\n" +
+                    "p.Name,\n" +
+                    "p.Cost_Of_Part\n" +
+                    "FROM scheduled s, appointment a, task t, car c, used_in u, part p\n" +
+                    "WHERE s.appointment_ID = " + appointmentId + "\n" +
+                    "AND t.Task_Type = 'Replacement'\n" +
+                    "AND t.Task_ID = s.task_ID\n" +
+                    "AND s.Appointment_ID = a.Appointment_ID\n" +
+                    "AND a.car_ID = c.Car_ID\n" +
+                    "AND c.Vehicle_ID = u.Vehicle_ID\n" +
+                    "AND t.task_ID = p.Task_ID\n" +
+                    "AND p.part_ID = u.part_ID");
+
+
+            ArrayList<ReplacementTask> reps = new ArrayList<ReplacementTask>();
+
+            while(rsRep.next()) {
+                ReplacementTask rep = new ReplacementTask(rsRep.getInt(1), rsRep.getString(2), rsRep.getInt(3), rsRep.getString(4), rsRep.getInt(5));
+                reps.add(rep);
+            }
+
+            con.close();
+
+            AppointmentTasksResponse appTasksRes = new AppointmentTasksResponse(tests, reps);
 
 
             res.header("Access-Control-Allow-Origin", "*");
@@ -558,9 +600,9 @@ class ReplacementTask {
     public String taskName;
     public int partId;
     public String partName;
-    public double costOfPart;
+    public int costOfPart;
 
-    public ReplacementTask(int taskId, String taskName, int partId, String partName, double costOfPart) {
+    public ReplacementTask(int taskId, String taskName, int partId, String partName, int costOfPart) {
         this.taskId = taskId;
         this.taskName = taskName;
         this.partId = partId;
@@ -570,10 +612,10 @@ class ReplacementTask {
 }
 
 class AppointmentTasksResponse{
-    public TestTask[] tests;
-    public ReplacementTask[] partReplacements;
+    public ArrayList<TestTask> tests;
+    public ArrayList<ReplacementTask> partReplacements;
 
-    public AppointmentTasksResponse(TestTask[] tests, ReplacementTask[] partReplacements) {
+    public AppointmentTasksResponse(ArrayList<TestTask> tests, ArrayList<ReplacementTask> partReplacements) {
         this.tests = tests;
         this.partReplacements = partReplacements;
     }
