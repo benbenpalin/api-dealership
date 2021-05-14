@@ -202,10 +202,10 @@ public class HelloWorld {
             String packageId = req.queryParams("packageId");
 
             PackageTask task1 = new PackageTask(1, "Brake Test", 1);
-            PackageTask task2 = new PackageTask(2, "Alternator Test", 2);
+            PackageTask task2 = new PackageTask(2, "Alternator Test", 1);
             PackageTask[] tasksInPackage = {task1, task2};
 
-            PackageTask task3 = new PackageTask(3, "Filter Replacement", 2);
+            PackageTask task3 = new PackageTask(3, "Filter Replacement", 1);
             PackageTask task4 = new PackageTask(4, "Oil Change", 1);
             PackageTask[] tasksNotInPackage = {task3, task4};
 
@@ -224,15 +224,28 @@ public class HelloWorld {
             String totalTime = req.queryParams("totalTime");
             String date = req.queryParams("date");
 
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/mydb","user","user");
+            Statement stmt=con.createStatement();
+            ResultSet rs=stmt.executeQuery("select \n" +
+                    "Time_Slot_ID as 'Time Slot ID',\n" +
+                    "Start_Time as 'Start Time',\n" +
+                    "End_Time as 'End Time'\n" +
+                    "from time_slot\n" +
+                    "WHERE Date_Of = \'" + date + "\'\n" +
+                    "AND HOUR(end_time) - Hour(Start_Time) >= " + totalTime);
 
-            Timeslot slot1 = new Timeslot(1, "1:00PM", "2:00 PM");
-            Timeslot slot2 = new Timeslot(2, "2:00PM", "3:00 PM");
-            Timeslot[] tasksInPackage = {slot1, slot2};
+            ArrayList<Timeslot> slots = new ArrayList<Timeslot>();
 
+            while(rs.next()) {
+                Timeslot slot = new Timeslot(rs.getInt(1), rs.getString(2), rs.getString(3));
+                slots.add(slot);
+            }
 
-            Timeslot[] timeslots = {slot1, slot2};
+            con.close();
 
-            TimeslotResponse response = new TimeslotResponse(timeslots);
+            TimeslotResponse response = new TimeslotResponse(slots);
 
 
             res.header("Access-Control-Allow-Origin", "*");
@@ -481,9 +494,9 @@ class Timeslot {
 }
 
 class TimeslotResponse{
-    public Timeslot[] timeslots;
+    public  ArrayList<Timeslot> timeslots;
 
-    public TimeslotResponse(Timeslot[] timeslots) {
+    public TimeslotResponse( ArrayList<Timeslot> timeslots) {
         this.timeslots = timeslots;
     }
 }
