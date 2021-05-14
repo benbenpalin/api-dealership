@@ -201,17 +201,49 @@ public class HelloWorld {
         get("api/tasksinpackage", (req, res) -> {
             String packageId = req.queryParams("packageId");
 
-            PackageTask task1 = new PackageTask(1, "Brake Test", 1);
-            PackageTask task2 = new PackageTask(2, "Alternator Test", 1);
-            PackageTask[] tasksInPackage = {task1, task2};
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/mydb","user","user");
+            Statement stmt=con.createStatement();
+            ResultSet rsIn=stmt.executeQuery("SELECT \n" +
+                    "t.task_ID,\n" +
+                    "concat(t.Name , ' ' , t.Task_type),\n" +
+                    "t.Estd_Time\n" +
+                    "FROM task t, recommends r\n" +
+                    "WHERE  r.Package_ID = " + packageId +"\n" +
+                    "AND t.task_ID = r.task_ID");
 
-            PackageTask task3 = new PackageTask(3, "Filter Replacement", 1);
-            PackageTask task4 = new PackageTask(4, "Oil Change", 1);
-            PackageTask[] tasksNotInPackage = {task3, task4};
+            ArrayList<PackageTask> inPackageTasks = new ArrayList<PackageTask>();
+
+            while(rsIn.next()) {
+                PackageTask task = new PackageTask(rsIn.getInt(1), rsIn.getString(2), rsIn.getInt(3));
+                inPackageTasks.add(task);
+            }
+
+            Statement stmt2=con.createStatement();
+            ResultSet rsNot=stmt2.executeQuery("SELECT \n" +
+                    "t1.task_ID,\n" +
+                    "concat(t1.Name , ' ' , t1.Task_type),\n" +
+                    "t1.Estd_Time\n" +
+                    "FROM task t1\n" +
+                    "WHERE t1.task_ID NOT IN\n" +
+                    "(SELECT \n" +
+                    "t2.task_ID\n" +
+                    "FROM task t2, recommends r\n" +
+                    "WHERE  r.Package_ID = " + packageId +"\n" +
+                    "AND t2.task_ID = r.task_ID)");
 
 
-            TasksInPackageResponse response = new TasksInPackageResponse(tasksInPackage, tasksNotInPackage);
+            ArrayList<PackageTask> notInPackageTasks = new ArrayList<PackageTask>();
 
+            while(rsNot.next()) {
+                PackageTask task = new PackageTask(rsNot.getInt(1), rsNot.getString(2), rsNot.getInt(3));
+                notInPackageTasks.add(task);
+            }
+
+            con.close();
+
+            TasksInPackageResponse response = new TasksInPackageResponse(inPackageTasks, notInPackageTasks);
 
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Content-Type");
@@ -246,7 +278,6 @@ public class HelloWorld {
             con.close();
 
             TimeslotResponse response = new TimeslotResponse(slots);
-
 
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Content-Type");
@@ -471,16 +502,6 @@ class AppointmentResponse{
     }
 }
 
-class TimeslotRequest{
-    public String totalTime;
-    public String date;
-
-    public TimeslotRequest(String totalTime, String date) {
-        this.totalTime = totalTime;
-        this.date = date;
-    }
-}
-
 class Timeslot {
     public int timeslotId;
     public String startTime;
@@ -584,10 +605,10 @@ class PackageTask{
 }
 
 class TasksInPackageResponse {
-    public PackageTask[] inPackage;
-    public PackageTask[] notInPackage;
+    public ArrayList<PackageTask> inPackage;
+    public ArrayList<PackageTask> notInPackage;
 
-    public TasksInPackageResponse(PackageTask[] inPackage, PackageTask[] notInPackage) {
+    public TasksInPackageResponse(ArrayList<PackageTask> inPackage, ArrayList<PackageTask> notInPackage) {
         this.inPackage = inPackage;
         this.notInPackage = notInPackage;
     }
