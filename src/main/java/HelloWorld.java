@@ -21,7 +21,7 @@ public class HelloWorld {
             Connection con=DriverManager.getConnection(
                     "jdbc:mysql://localhost:3306/mydb","user","user");
             Statement stmt=con.createStatement();
-            ResultSet rs=stmt.executeQuery("Select v.Vehicle_ID,make, model, year, count(v.vehicle_ID) AS Total_Sold, SUM(COST) - SUM(sales_price) AS Profit\n" +
+            ResultSet rs=stmt.executeQuery("Select v.Vehicle_ID,make, model, year, count(v.vehicle_ID) AS Total_Sold,  SUM(sales_price) - SUM(COST) AS Profit\n" +
                     "FROM car c, vehicle_type v, purchase p\n" +
                     "WHERE c.vehicle_ID = v.vehicle_Id\n" +
                     "AND p.car_ID = c.car_Id\n" +
@@ -31,7 +31,7 @@ public class HelloWorld {
             ArrayList<ReportRow> rows = new ArrayList<ReportRow>();
 
             while(rs.next()){
-                ReportRow repres = new ReportRow(rs.getInt(1), rs.getString(2),rs.getString(3) ,rs.getString(4) , rs.getInt(5), rs.getDouble(6));
+                ReportRow repres = new ReportRow(rs.getInt(1), rs.getString(2),rs.getString(3) ,rs.getString(4) .substring(0,4), rs.getInt(5), rs.getDouble(6));
                 rows.add(repres);
             }
 
@@ -357,8 +357,9 @@ public class HelloWorld {
                     }
                 }
             } else {
-                customerIds[0] = purchaseBody.customer.customerId[0];
-                customerIds[1] = purchaseBody.customer.customerId[1];
+                customerIds[0] = purchaseBody.customer.customerIds[0];
+                if(purchaseBody.customer.newCustomers.length == 2)
+                    customerIds[1] = purchaseBody.customer.customerIds[1];
             }
 
             for (int id : customerIds) {
@@ -606,23 +607,59 @@ public class HelloWorld {
                     "SET " + "Pick_Up = '" + time + "'\n" +
                     "WHERE Appointment_ID = "+ appointmentId);
 
+
+            // tests
+
+            Statement stTest=con.createStatement();
+            ResultSet rsT = stTest.executeQuery("select\n" +
+                    "concat(Name, ' ' , task_type) as `Task Name`,\n" +
+                    "Time_To_Complete as `Time To Complete`,\n" +
+                    "Time_To_Complete * Rate as `Labor Cost` ,\n" +
+                    "Test_Failed as `Test Failed`\n" +
+                    "FROM task t, scheduled s\n" +
+                    "WHERE s.Appointment_ID = " + completeAppointmentBody.appointmentId + "\n" +
+                    "AND t.task_ID = s.task_ID\n" +
+                    "AND t.task_Type LIKE 'Test%'");
+
+            ArrayList<FinishedTest> tests = new ArrayList<FinishedTest>();
+
+            while(rsT.next()){
+                FinishedTest test = new FinishedTest(rsT.getString(1), rsT.getInt(2), rsT.getInt(3),  rsT.getInt(4) == 1 ? "Passed" : "Failed");
+                tests.add(test);
+            }
+
+            // replacement
+
+            Statement stRep=con.createStatement();
+            ResultSet rsR = stRep.executeQuery("select\n" +
+                    "concat(t.Name, ' ' , task_type) as `Task Name`,\n" +
+                    "Time_To_Complete as `Time To Complete`,\n" +
+                    "Time_To_Complete * Rate as `Labor Cost`,\n" +
+                    "p.Name,\n" +
+                    "p.Cost_Of_Part\n" +
+                    "FROM task t, scheduled s, appointment a, car c,  vehicle_type v , used_in u, part p\n" +
+                    "WHERE s.Appointment_ID = " + completeAppointmentBody.appointmentId + "\n" +
+                    "AND t.task_ID = s.task_ID\n" +
+                    "AND t.task_Type LIKE 'Replacement%'\n" +
+                    "and a.appointment_ID=s.Appointment_ID\n" +
+                    "and a.car_id = c.car_id\n" +
+                    "AND v.Vehicle_ID = c.Vehicle_ID\n" +
+                    "AND u.vehicle_ID= v.vehicle_ID\n" +
+                    "and p.part_ID = u.part_ID\n" +
+                    "and p.task_ID = s.task_ID");
+
+            ArrayList<FinishedReplacement> reps = new ArrayList<FinishedReplacement>();
+
+            while(rsR.next()){
+                FinishedReplacement rep = new FinishedReplacement(rsR.getString(1), rsR.getInt(2), rsR.getInt(3),  rsR.getString(4), rsR.getDouble(5));
+                reps.add(rep);
+            }
+
             con.close();
-
-            //TODO bill
-
-
 
             String[] customers = {"Barack", "Michel"};
 
-            FinishedTest test1 = new FinishedTest("Brake Test", 10, 100, "passed");
-            FinishedTest test2 = new FinishedTest("Engine Test", 10, 100, "failed");
 
-            FinishedTest[] tests = {test1, test2};
-
-            FinishedReplacement rep1 = new FinishedReplacement("Oil Change", 15, 1, "oil", 75);
-            FinishedReplacement rep2 = new FinishedReplacement("Enginer Replace", 75, 750, "enginer", 1000);
-
-            FinishedReplacement[] reps= {rep1, rep2};
             CompleteAppointmentResponse response = new CompleteAppointmentResponse(customers, tests, reps, "10:00 AM", "2:00 PM", "05/09/2021");
 
             res.header("Access-Control-Allow-Origin", "*");
@@ -645,13 +682,13 @@ class CompleteAppointmentRequest{
 
 class CompleteAppointmentResponse{
     public String[] customerNames;
-    public FinishedTest[] tests;
-    public FinishedReplacement[] replacements;
+    public ArrayList<FinishedTest> tests;
+    public ArrayList<FinishedReplacement>  replacements;
     public String dropOff;
     public String pickUp;
     public String date;
 
-    public CompleteAppointmentResponse(String[] customerNames, FinishedTest[] tests, FinishedReplacement[] replacements, String dropOff, String pickUp, String date) {
+    public CompleteAppointmentResponse(String[] customerNames, ArrayList<FinishedTest> tests, ArrayList<FinishedReplacement>  replacements, String dropOff, String pickUp, String date) {
         this.customerNames = customerNames;
         this.tests = tests;
         this.replacements = replacements;
@@ -840,12 +877,12 @@ class PurchaseRequest{
 
 class CustomerInfo {
     public boolean isNew;
-    public int[] customerId;
+    public int[] customerIds;
     public NewCustomer[] newCustomers;
 
-    public CustomerInfo(boolean isNew, int[] customerId, NewCustomer[] newCustomers) {
+    public CustomerInfo(boolean isNew, int[] customerIds, NewCustomer[] newCustomers) {
         this.isNew = isNew;
-        this.customerId = customerId;
+        this.customerIds = customerIds;
         this.newCustomers = newCustomers;
     }
 }
