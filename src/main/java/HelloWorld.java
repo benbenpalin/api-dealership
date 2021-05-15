@@ -81,6 +81,12 @@ public class HelloWorld {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection con=DriverManager.getConnection(
                     "jdbc:mysql://localhost:3306/mydb","user","user");
+            LocalDate now = LocalDate.now();
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+            String date  = now.format(formatter);
+
             Statement stmt=con.createStatement();
             ResultSet rs=stmt.executeQuery("select \n" +
                     "\n" +
@@ -94,7 +100,9 @@ public class HelloWorld {
                     "from appointment\n" +
                     "inner join Car ON car.Car_ID = appointment.Car_ID\n" +
                     "inner join vehicle_type ON vehicle_type.Vehicle_ID = car.Vehicle_ID\n" +
-                    ";");
+                    "inner join time_slot on appointment.time_slot_ID = time_slot.time_Slot_ID \n" +
+                    "WHERE date_of = '" + date + "'\n" +
+                    "ORDER BY Appointment_ID;");
 
             ArrayList<Appointment> appointments = new ArrayList<Appointment>();
 
