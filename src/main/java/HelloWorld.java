@@ -291,6 +291,18 @@ public class HelloWorld {
         post("api/dropoff", (req, res) -> {
             DropoffRequest dropBody = gson.fromJson(req.body(), DropoffRequest.class);
 
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/mydb","user","user");
+
+            LocalTime now = LocalTime.now();
+            DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_TIME;
+            String time  = now.format(formatter);
+
+            Statement st=con.createStatement();
+            st.executeUpdate("Update appointment Set Drop_Off = '" + time + "' WHERE Appointment_ID = " + dropBody.appointmentId);
+
+            con.close();
+
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Content-Type");
             res.status(200);
@@ -516,8 +528,6 @@ public class HelloWorld {
             AddOrCompleteTask addtaskBody = gson.fromJson(req.body(), AddOrCompleteTask.class);
 
             String values = "(" + addtaskBody.appointmentId + ", " + addtaskBody.taskId + ", null, 'F', null)";
-            System.out.println("INSERT INTO scheduled\n" +
-                    "VALUES" + values);
 
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection con=DriverManager.getConnection(
