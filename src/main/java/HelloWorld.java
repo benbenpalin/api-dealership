@@ -4,6 +4,7 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.io.*;
 
@@ -300,21 +301,189 @@ public class HelloWorld {
         post("api/purchase", (req, res) -> {
             PurchaseRequest purchaseBody = gson.fromJson(req.body(), PurchaseRequest.class);
 
-            String[] customers = {"Barack", "Michel"};
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/mydb","user","user");
 
-            PurchaseResponse response = new PurchaseResponse(customers, 1, "5/2/2020","Toyota", "Camry", "2015", "Blue", "1234567", "DC");
+            int[] customerIds = new int[2];
+
+            if(purchaseBody.customer.isNew) {
+                NewCustomer info = purchaseBody.customer.newCustomers[0];
+
+                Statement stmtCustomer1=con.createStatement();
+                stmtCustomer1.executeUpdate("Insert Into customer(F_Name, M_Init, L_Name, Phone, Address)\n" +
+                        "Values ('" + info.firstName + "', '" + info.middleInitial + "', '" + info.lastName + "', '" + info.phoneNumber + "', '" + info.streetAddress + " "  + info.city + ", " + info.state + " " + info.zipcode  +"')");
+
+                Statement stmtId1=con.createStatement();
+                ResultSet res1 = stmtId1.executeQuery("SELECT LAST_INSERT_ID();");
+
+                while(res1.next()){
+                    customerIds[0] = res1.getInt(1);
+                }
+
+
+                if(purchaseBody.customer.newCustomers.length == 2) {
+                    NewCustomer info2 = purchaseBody.customer.newCustomers[1];
+
+                    Statement stmtCustomer2=con.createStatement();
+                    stmtCustomer2.executeUpdate("Insert Into customer(F_Name, M_Init, L_Name, Phone, Address)\n" +
+                            "Values ('" + info2.firstName + "', '" + info2.middleInitial + "', '" + info2.lastName + "', '" + info2.phoneNumber + "', '" + info2.streetAddress + " "  + info2.city + ", " + info2.state + " " + info2.zipcode  +"')");
+
+                    Statement stmtId2=con.createStatement();
+                    ResultSet res2 = stmtId2.executeQuery("SELECT LAST_INSERT_ID();");
+
+                    while(res2.next()){
+                        customerIds[1] = res2.getInt(1);
+                    }
+                }
+            } else {
+                customerIds[0] = purchaseBody.customer.customerId[0];
+                customerIds[1] = purchaseBody.customer.customerId[1];
+            }
+
+            for (int id : customerIds) {
+                String idval = "(" + id +", " + purchaseBody.carId + ")\n";
+
+
+                Statement stmtOwns=con.createStatement();
+                stmtOwns.executeUpdate("Insert Into owns \n Values" + idval);
+            }
+
+            Statement stp=con.createStatement();
+            stp.executeUpdate("Insert Into purchase(Car_ID, Date_Of_Purchase, Sales_Price) \n Values(" + purchaseBody.carId + ", CURDATE(), " + purchaseBody.salePrice + ")" );
+
+            Statement stmtId1=con.createStatement();
+            ResultSet res1 = stmtId1.executeQuery("SELECT LAST_INSERT_ID();");
+            int purchaseId = 0;
+            while(res1.next()){
+                purchaseId = res1.getInt(1);
+            }
+
+
+            Statement stcust = con.createStatement();
+            ResultSet rs = stcust.executeQuery("SELECT F_Name, L_Name \n" +
+                    "FROM customer \n" +
+                    "WHERE (Customer_ID = " + customerIds[0] + " OR Customer_ID = " + customerIds[1] + ")");
+
+            ArrayList<String> customers = new ArrayList<String>();
+            while(rs.next()){
+                customers.add(rs.getString(1) + " " + rs.getString(2));
+            }
+
+            Statement stCar = con.createStatement();
+            ResultSet rsC = stCar.executeQuery("SELECT Color, License_Plate_State, License_Plate_Number, Make, Model,Year \n" +
+                    "FROM car, vehicle_type \n" +
+                    "WHERE Car_ID = " + purchaseBody.carId + "\n" +
+                    "AND Vehicle_Type.vehicle_ID = car.Vehicle_ID");
+
+            LocalDate now = LocalDate.now();
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+            String date  = now.format(formatter);
+
+            ArrayList<PurchaseResponse> response = new ArrayList<PurchaseResponse>();
+
+            while(rsC.next()){
+                PurchaseResponse p = new PurchaseResponse(customers, purchaseId, date, rsC.getString(4),rsC.getString(5),rsC.getInt(6),rsC.getString(1),rsC.getString(3), rsC.getString(2));
+                response.add(p);
+            }
+
 
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Content-Type");
             res.status(200);
 
-            return gson.toJson(response, PurchaseResponse.class);
+            return gson.toJson(response.get(0), PurchaseResponse.class);
         });
 
         post("api/bookappointment", (req, res) -> {
             AppointmentRequest appointmentBody = gson.fromJson(req.body(), AppointmentRequest.class);
 
-            AppointmentResponse response = new AppointmentResponse(1);
+            int[] customerIds = new int[2];
+
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/mydb","user","user");
+
+            if(appointmentBody.customer.isNew) {
+                NewCustomer info = appointmentBody.customer.newCustomers[0];
+
+                Statement stmtCustomer1=con.createStatement();
+                stmtCustomer1.executeUpdate("Insert Into customer(F_Name, M_Init, L_Name, Phone, Address)\n" +
+                        "Values ('" + info.firstName + "', '" + info.middleInitial + "', '" + info.lastName + "', '" + info.phoneNumber + "', '" + info.streetAddress + " "  + info.city + ", " + info.state + " " + info.zipcode  +"')");
+
+                Statement stmtId1=con.createStatement();
+                ResultSet res1 = stmtId1.executeQuery("SELECT LAST_INSERT_ID();");
+
+                while(res1.next()){
+                    customerIds[0] = res1.getInt(1);
+                }
+
+
+                if(appointmentBody.customer.newCustomers.length == 2) {
+                    NewCustomer info2 = appointmentBody.customer.newCustomers[1];
+
+                    Statement stmtCustomer2=con.createStatement();
+                    stmtCustomer2.executeUpdate("Insert Into customer(F_Name, M_Init, L_Name, Phone, Address)\n" +
+                            "Values ('" + info2.firstName + "', '" + info2.middleInitial + "', '" + info2.lastName + "', '" + info2.phoneNumber + "', '" + info2.streetAddress + " "  + info2.city + ", " + info2.state + " " + info2.zipcode  +"')");
+
+                    Statement stmtId2=con.createStatement();
+                    ResultSet res2 = stmtId2.executeQuery("SELECT LAST_INSERT_ID();");
+
+                    while(res2.next()){
+                        customerIds[1] = res2.getInt(1);
+                    }
+                }
+            }
+
+            int carId = appointmentBody.car.carId;
+
+            if (appointmentBody.car.isNew) {
+                NewCar car = appointmentBody.car;
+
+                Statement stmtCar=con.createStatement();
+                stmtCar.executeUpdate("Insert Into car(Vehicle_ID, Color, Odometer, Is_In_Inventory, License_Plate_State, License_Plate_Number)\n" +
+                        "Values ('" + car.vehicleId + "', '" + car.color + "', '" + car.odometer + "', '" + 0 + "', '" + car.licensePlateState + "', '"  + car.licensePlateNumber + "')");
+
+                Statement stmtCarId=con.createStatement();
+                ResultSet rescarId = stmtCarId.executeQuery("SELECT LAST_INSERT_ID();");
+
+                while(rescarId.next()){
+                    carId = rescarId.getInt(1);
+                }
+
+                for (int id : customerIds) {
+                    String idval = "(" + id +", " + carId + ")\n";
+
+
+                    Statement stmtOwns=con.createStatement();
+                    stmtOwns.executeUpdate("Insert Into owns \n Values" + idval);
+                }
+            }
+
+            Statement stApp=con.createStatement();
+            stApp.executeUpdate("Insert Into appointment(Car_ID, Time_Slot_ID)\n" +
+                    "Values(" + carId + ", " + appointmentBody.timeslotId + ")");
+
+            Statement stmtId1=con.createStatement();
+            ResultSet res1 = stmtId1.executeQuery("SELECT LAST_INSERT_ID();");
+
+            int appointmentId = 0;
+
+            while(res1.next()){
+                appointmentId = res1.getInt(1);
+            }
+
+
+            for (int id : appointmentBody.tasks) {
+                String tval = "(" + appointmentId +", " + id + ")\n";
+
+                Statement StSched=con.createStatement();
+                StSched.executeUpdate("Insert Into scheduled(Appointment_ID, Task_ID) \n Values" + tval);
+            }
+
+            con.close();
+
+            AppointmentResponse response = new AppointmentResponse(appointmentId);
 
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Content-Type");
@@ -420,6 +589,7 @@ public class HelloWorld {
 
             con.close();
 
+            //TODO bill
             String[] customers = {"Barack", "Michel"};
 
             FinishedTest test1 = new FinishedTest("Brake Test", 10, 100, "passed");
@@ -550,6 +720,17 @@ class AppointmentRequest{
     public int[] tasks;
     public int timeslotId;
 
+    @Override
+    public String toString() {
+        return "AppointmentRequest{" +
+                "customer=" + customer +
+                ", car=" + car +
+                ", packageId=" + packageId +
+                ", tasks=" + Arrays.toString(tasks) +
+                ", timeslotId=" + timeslotId +
+                '}';
+    }
+
     public AppointmentRequest(CustomerInfo customer, NewCar car, int packageId, int[] tasks, int timeslotId) {
         this.customer = customer;
         this.car = car;
@@ -595,9 +776,23 @@ class NewCustomer{
     public String streetAddress;
     public String city;
     public String state;
-    public String zipCode;
+    public String zipcode;
 
-    public NewCustomer(String firstName, String middleInitial, String lastName, String phoneNumber, String streetAddress, String city, String state, String zipCode) {
+    @Override
+    public String toString() {
+        return "NewCustomer{" +
+                "firstName='" + firstName + '\'' +
+                ", middleInitial='" + middleInitial + '\'' +
+                ", lastName='" + lastName + '\'' +
+                ", phoneNumber='" + phoneNumber + '\'' +
+                ", streetAddress='" + streetAddress + '\'' +
+                ", city='" + city + '\'' +
+                ", state='" + state + '\'' +
+                ", zipCode='" + zipcode + '\'' +
+                '}';
+    }
+
+    public NewCustomer(String firstName, String middleInitial, String lastName, String phoneNumber, String streetAddress, String city, String state, String zipcode) {
         this.firstName = firstName;
         this.middleInitial = middleInitial;
         this.lastName = lastName;
@@ -605,7 +800,7 @@ class NewCustomer{
         this.streetAddress = streetAddress;
         this.city = city;
         this.state = state;
-        this.zipCode = zipCode;
+        this.zipcode = zipcode;
     }
 }
 // TODO add carID and salePrice to purchase
@@ -634,17 +829,17 @@ class CustomerInfo {
 }
 
 class PurchaseResponse {
-    public String[] customerNames;
+    public ArrayList<String> customerNames;
     public int purchaseId;
     public String dateOfSale;
     public String make;
     public String model;
-    public String year;
+    public int year;
     public String color;
     public String licensePlateNumber;
     public String licensePlateState;
 
-    public PurchaseResponse(String[] customerNames, int purchaseId, String dateOfSale, String make, String model, String year, String color, String licensePlateNumber, String licensePlateState) {
+    public PurchaseResponse(ArrayList<String> customerNames, int purchaseId, String dateOfSale, String make, String model, int year, String color, String licensePlateNumber, String licensePlateState) {
         this.customerNames = customerNames;
         this.purchaseId = purchaseId;
         this.dateOfSale = dateOfSale;
