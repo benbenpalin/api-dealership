@@ -1,5 +1,7 @@
 import static spark.Spark.*;
 import com.google.gson.*;
+import java.time.*;
+import java.time.format.DateTimeFormatter;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +21,6 @@ public class HelloWorld {
                 Statement stmt=con.createStatement();
                 ResultSet rs=stmt.executeQuery("select * from appointment");
                 while(rs.next())
-                    System.out.println(rs.getInt(1));
 
                 con.close();
             } catch (Exception e){System.out.println(e);}
@@ -345,6 +346,18 @@ public class HelloWorld {
         post("api/addtask", (req, res) -> {
             AddOrCompleteTask addtaskBody = gson.fromJson(req.body(), AddOrCompleteTask.class);
 
+            String values = "(" + addtaskBody.appointmentId + ", " + addtaskBody.taskId + ", null, 'F', null)";
+            System.out.println("INSERT INTO scheduled\n" +
+                    "VALUES" + values);
+
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/mydb","user","user");
+            Statement stmt=con.createStatement();
+            stmt.executeUpdate("INSERT INTO scheduled\n" +
+                    "VALUES" + values);
+            con.close();
+
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Content-Type");
             res.status(200);
@@ -355,6 +368,28 @@ public class HelloWorld {
         post("api/completetask", (req, res) -> {
             AddOrCompleteTask completetaskBody = gson.fromJson(req.body(), AddOrCompleteTask.class);
 
+            String testStatus;
+
+            if (completetaskBody.isTest && (completetaskBody.testStatus.equals("Passed"))) {
+                testStatus = ", Test_Failed=1";
+            } else  if (completetaskBody.isTest && (completetaskBody.testStatus.equals("Failed"))) {
+                testStatus = ", Test_Failed=1";
+            } else  {testStatus = "";}
+
+            String values = "Complete = 1" + testStatus;
+
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/mydb","user","user");
+            Statement stmt=con.createStatement();
+            stmt.executeUpdate("Update scheduled \n" +
+                    "SET " + values + "\n" +
+                    "WHERE Appointment_ID = "+ completetaskBody.appointmentId +"\n" +
+                    "AND Task_ID = " + completetaskBody.taskId);
+
+            con.close();
+
+
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Content-Type");
             res.status(200);
@@ -364,6 +399,26 @@ public class HelloWorld {
 
         post("api/completeappointment", (req, res) -> {
             CompleteAppointmentRequest completeAppointmentBody = gson.fromJson(req.body(), CompleteAppointmentRequest.class);
+
+            int appointmentId = completeAppointmentBody.appointmentId;
+
+           LocalTime now = LocalTime.now();
+
+            DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_TIME;
+
+            String time  = now.format(formatter);
+
+
+
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/mydb","user","user");
+            Statement stmt=con.createStatement();
+            stmt.executeUpdate("Update appointment \n" +
+                    "SET " + "Pick_Up = '" + time + "'\n" +
+                    "WHERE Appointment_ID = "+ appointmentId);
+
+            con.close();
 
             String[] customers = {"Barack", "Michel"};
 
@@ -448,13 +503,13 @@ class AddOrCompleteTask {
     public int taskId;
     public int appointmentId;
     public boolean isTest;
-    public String testPassed;
+    public String testStatus;
 
-    public AddOrCompleteTask(int taskId, int appointmentId, boolean isTest, String testPassed) {
+    public AddOrCompleteTask(int taskId, int appointmentId, boolean isTest, String testStatus) {
         this.taskId = taskId;
         this.appointmentId = appointmentId;
         this.isTest = isTest;
-        this.testPassed = testPassed;
+        this.testStatus = testStatus;
     }
 }
 
