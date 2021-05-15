@@ -153,6 +153,19 @@ public class HelloWorld {
             Connection con=DriverManager.getConnection(
                     "jdbc:mysql://localhost:3306/mydb","user","user");
             Statement stmt=con.createStatement();
+
+            System.out.println("select\n" +
+                    "scheduled.Task_ID as 'Task ID',\n" +
+                    "concat(t1.Name , ' ' , t1.Task_type) as 'Task Name' ,\n" +
+                    "failure_requires.Part_Replacement_ID,\n" +
+                    "concat(t2.Name , ' ' , t2.Task_type) as 'Replacement_Name'\n" +
+                    "from scheduled, task t1, task t2, failure_requires\n" +
+                    "WHERE t1.Task_ID = scheduled.Task_ID\n" +
+                    "AND failure_requires.Test_Task_ID = scheduled.Task_ID\n" +
+                    "AND failure_requires.Part_Replacement_ID = t2.Task_ID\n" +
+                    "AND t1.Task_Type LIKE 'Test%' \n" +
+                    "AND Appointment_ID = " + appointmentId);
+
             ResultSet rsTest=stmt.executeQuery("select\n" +
                     "scheduled.Task_ID as 'Task ID',\n" +
                     "concat(t1.Name , ' ' , t1.Task_type) as 'Task Name' ,\n" +
@@ -162,7 +175,7 @@ public class HelloWorld {
                     "WHERE t1.Task_ID = scheduled.Task_ID\n" +
                     "AND failure_requires.Test_Task_ID = scheduled.Task_ID\n" +
                     "AND failure_requires.Part_Replacement_ID = t2.Task_ID\n" +
-                    "AND t1.Task_Type = 'Test' \n" +
+                    "AND t1.Task_Type LIKE 'Test%' \n" +
                     "AND Appointment_ID = " + appointmentId);
 
             ArrayList<TestTask> tests = new ArrayList<TestTask>();
@@ -181,7 +194,7 @@ public class HelloWorld {
                     "p.Cost_Of_Part\n" +
                     "FROM scheduled s, appointment a, task t, car c, used_in u, part p\n" +
                     "WHERE s.appointment_ID = " + appointmentId + "\n" +
-                    "AND t.Task_Type = 'Replacement'\n" +
+                    "AND t.Task_Type LIKE 'Replacement%'\n" +
                     "AND t.Task_ID = s.task_ID\n" +
                     "AND s.Appointment_ID = a.Appointment_ID\n" +
                     "AND a.car_ID = c.Car_ID\n" +
@@ -523,7 +536,7 @@ public class HelloWorld {
             Connection con=DriverManager.getConnection(
                     "jdbc:mysql://localhost:3306/mydb","user","user");
             Statement stmt=con.createStatement();
-            stmt.executeUpdate("Insert Into was_replaced\n" +
+            stmt.executeUpdate("Insert Into was_replaced(Appointment_ID, PArt_ID)\n" +
                     "Values (" + values + ")");
             con.close();
 
@@ -537,7 +550,7 @@ public class HelloWorld {
         post("api/addtask", (req, res) -> {
             AddOrCompleteTask addtaskBody = gson.fromJson(req.body(), AddOrCompleteTask.class);
 
-            String values = "(" + addtaskBody.appointmentId + ", " + addtaskBody.taskId + ", null, 'F', null)";
+            String values = "(" + addtaskBody.appointmentId + ", " + addtaskBody.taskId + ", null, null, null)";
 
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection con=DriverManager.getConnection(
