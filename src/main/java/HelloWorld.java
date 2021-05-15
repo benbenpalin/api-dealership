@@ -495,11 +495,14 @@ public class HelloWorld {
                 }
 
                 for (int id : customerIds) {
-                    String idval = "(" + id +", " + carId + ")\n";
+                    if (id != 0) {
+                        String idval = "(" + id + ", " + carId + ")\n";
 
+                        System.out.println("Insert Into owns \n Values" + idval);
 
-                    Statement stmtOwns=con.createStatement();
-                    stmtOwns.executeUpdate("Insert Into owns \n Values" + idval);
+                        Statement stmtOwns = con.createStatement();
+                        stmtOwns.executeUpdate("Insert Into owns \n Values" + idval);
+                    }
                 }
             }
 
