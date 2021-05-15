@@ -5,8 +5,6 @@ import java.time.format.DateTimeFormatter;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
-import java.io.*;
 
 public class HelloWorld {
     public static void main(String[] args) {
@@ -15,28 +13,39 @@ public class HelloWorld {
 
         // get report
         get("api/report", (req, res) -> {
-            try {
-                Class.forName("com.mysql.cj.jdbc.Driver");
-                Connection con=DriverManager.getConnection(
-                        "jdbc:mysql://localhost:3306/mydb","user","user");
-                Statement stmt=con.createStatement();
-                ResultSet rs=stmt.executeQuery("select * from appointment");
-                while(rs.next())
-
-                con.close();
-            } catch (Exception e){System.out.println(e);}
-
 
             String startDate = req.queryParams("startDate");
             String endDate = req.queryParams("endDate");
 
-            ReportResponse repres = new ReportResponse(1, "bmw","x5" ,"2020" , 10, 12.0);
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection con=DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/mydb","user","user");
+            Statement stmt=con.createStatement();
+            ResultSet rs=stmt.executeQuery("Select v.Vehicle_ID,make, model, year, count(v.vehicle_ID) AS Total_Sold, SUM(COST) - SUM(sales_price) AS Profit\n" +
+                    "FROM car c, vehicle_type v, purchase p\n" +
+                    "WHERE c.vehicle_ID = v.vehicle_Id\n" +
+                    "AND p.car_ID = c.car_Id\n" +
+                    "AND p.Date_Of_Purchase BETWEEN '" + startDate + "' and '" + endDate + "'\n" +
+                    "GROUP BY v.Vehicle_ID");
+
+            ArrayList<ReportRow> rows = new ArrayList<ReportRow>();
+
+            while(rs.next()){
+                ReportRow repres = new ReportRow(rs.getInt(1), rs.getString(2),rs.getString(3) ,rs.getString(4) , rs.getInt(5), rs.getDouble(6));
+                rows.add(repres);
+            }
+
+            con.close();
 
             res.header("Access-Control-Allow-Origin", "*");
             res.header("Access-Control-Allow-Headers", "Content-Type");
             res.status(200);
 
-           return gson.toJson(repres, ReportResponse.class);
+
+
+            ReportResponse response = new ReportResponse(rows);
+
+           return gson.toJson(response, ReportResponse.class);
         });
 
         get("api/packages", (req, res) -> {
@@ -600,6 +609,9 @@ public class HelloWorld {
             con.close();
 
             //TODO bill
+
+
+
             String[] customers = {"Barack", "Michel"};
 
             FinishedTest test1 = new FinishedTest("Brake Test", 10, 100, "passed");
@@ -982,7 +994,15 @@ class DropoffRequest {
     }
 }
 
-class ReportResponse {
+class ReportResponse{
+    ArrayList<ReportRow> rows;
+
+    public ReportResponse(ArrayList<ReportRow> rows) {
+        this.rows = rows;
+    }
+}
+
+class ReportRow {
     public int vehicleId;
     public String make;
     public String model;
@@ -990,7 +1010,7 @@ class ReportResponse {
     public int totalSold;
     public double profit;
 
-    public ReportResponse (
+    public ReportRow(
             int VehicleId,
              String Make,
              String Model,
